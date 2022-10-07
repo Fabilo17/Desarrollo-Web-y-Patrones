@@ -1,0 +1,229 @@
+package com.tienda.entity;
+import java.io.Serializable;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "paises")
+public class Pais implements Serializable{
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+    private String pais;
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public String getPais() {
+        return pais;
+    }
+
+    public void setPais(String pais) {
+        this.pais = pais;
+    }
+    
+    
+}
+
+package com.tienda.entity;
+import java.io.Serializable;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "presona")
+public class Persona implements Serializable{
+    @Id
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    private long id;
+    
+    private String nombre;
+    private String apellidos1;
+    private String apellidos2;
+    private String telefono;
+    private String email;
+    
+    @ManyToOne
+    @JoinColumn(name="paises_id")
+    private Pais pais;
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getApellidos1() {
+        return apellidos1;
+    }
+
+    public void setApellidos1(String apellidos1) {
+        this.apellidos1 = apellidos1;
+    }
+
+    public String getApellidos2() {
+        return apellidos2;
+    }
+
+    public void setApellidos2(String apellidos2) {
+        this.apellidos2 = apellidos2;
+    }
+
+    public String getTelefono() {
+        return telefono;
+    }
+
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+    
+}
+
+package com.tienda.repository;
+import com.tienda.entity.Pais;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface PaisRepository extends CrudRepository<Pais,Long>{
+}
+
+package com.tienda.repository;
+import com.tienda.entity.Persona;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface PersonaRepository extends CrudRepository<Persona,Long>{
+}
+
+package com.tienda.service;
+import com.tienda.entity.Pais;
+import java.util.List;
+
+public interface IPaisService {
+    public List<Pais> listCountry();
+}
+
+package com.tienda.service;
+import com.tienda.entity.Persona;
+import java.util.List;
+
+public interface IPersonaService {
+    public List<Persona> getAllPersona();
+    public Persona getPersonaById(long id);
+    public void savePersona (Persona persona);
+    public void delete(long id);
+}
+
+package com.tienda.service;
+
+import com.tienda.entity.Pais;
+import com.tienda.repository.PaisRepository;
+import java.util.List;
+import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+
+@Service
+public class PaisService implements IPaisService{
+    @Autowired
+    private PaisRepository paisRepository;
+    
+    @Override
+    public List<Pais> listCountry() {
+        return (List<Pais>)paisRepository.findAll();
+    }
+    
+}
+
+package com.tienda.service;
+import com.tienda.entity.Persona;
+import com.tienda.repository.PersonaRepository;
+import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class PersonaService implements IPersonaService{
+    @Autowired
+    private PersonaRepository personaRepository;
+    
+    @Override
+    public List<Persona> getAllPersona(){
+        return (List<Persona>)personaRepository.findAll();
+    }
+    @Override
+    public Persona getPersonaById(long id){
+        return personaRepository.findById(id).orElse(null);
+    }
+    @Override
+    public void savePersona(Persona persona){
+        personaRepository.save(persona);
+    }
+    @Override
+    public void delete(long id){
+        personaRepository.deleteById(id);
+    }
+}
+
+package com.tienda.controller;
+import com.tienda.entity.Pais;
+import com.tienda.entity.Persona;
+import com.tienda.service.IPaisService;
+import com.tienda.service.IPersonaService;
+import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+
+@Controller
+public class PersonaController {
+    @Autowired
+    private IPersonaService personaService;
+    @Autowired
+    private IPaisService paisService;
+    
+    @GetMapping("/persona")
+    public String index (Model model){
+        List<Persona> listaPersona = personaService.getAllPersona();
+        model.addAttribute("titulo", "Tabla Personas");
+        model.addAttribute("personas", listaPersona);
+        return "personas";
+    }
+}
+
